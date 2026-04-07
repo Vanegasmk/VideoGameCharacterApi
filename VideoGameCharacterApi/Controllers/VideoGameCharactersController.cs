@@ -1,23 +1,25 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using VideoGameCharacterApi.Models;
+using VideoGameCharacterApi.Services;
 
 namespace VideoGameCharacterApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class VideoGameCharactersController : ControllerBase
+    public class VideoGameCharactersController(IVideoGameCharacterService service) : ControllerBase
     {
-        static List<Character> characters = new List<Character>
-        {
-            new Character { Id = 1, Name = "Mario", Game = "Super Mario Bros.", Role = "Hero" },
-            new Character { Id = 1, Name = "Link", Game = "Zelda.", Role = "Hero" },
-            new Character { Id = 1, Name = "Venom", Game = "Spider Man.", Role = "Villain" },
-        };
-
 
         [HttpGet]
         public async Task<ActionResult<List<Character>>> GetCharacters()
-            => await Task.FromResult(Ok(characters));
+            => Ok(await service.GetAllCharactersAsync());
+
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Character>> GetCharacter(int id)
+        {
+            var character = await service.GetCharactersByIdAsync(id);
+            return character is null ? NotFound("Character with the given Id was not found") : Ok(character);
+        }
     }
 }
